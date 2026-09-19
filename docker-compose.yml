@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  webapp:
+    build: .
+    ports:
+      - "8080:3000"
+
+    environment:
+      RAILS_ENV: production
+      RAILS_MASTER_KEY: 47800c6168b491b3cd9c060f229fa472
+      DATABASE_URL: postgres://app_user:app_pass@db/app_db
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+  db:
+    image: postgres:16-alpine
+
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+      POSTGRES_DB: app_db
+
+    volumes:
+      - ./datadir:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
